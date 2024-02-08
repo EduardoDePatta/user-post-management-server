@@ -1,12 +1,20 @@
-import { Pool } from 'pg'
 import environments from './environments'
+import pgPromise from 'pg-promise'
+import bluebird from 'bluebird'
 
-const pool = new Pool({
+const initialOptions = {
+  promiseLib: bluebird
+}
+
+const config = {
   user: environments.DB_USER,
   host: environments.DB_HOST,
   database: environments.DB_DATABASE,
   password: environments.DB_PASSWORD,
   port: environments.DB_PORT
-})
+}
 
-export default pool
+const pgp = pgPromise(initialOptions)
+const db = pgp(config)
+
+export default db
