@@ -33,7 +33,36 @@ async function insertIntoTable<T extends Tables>(tableName: T, data: Omit<Partia
   }
 }
 
+async function updateInTable<T extends Tables>(
+  tableName: T,  id: number,  data: Partial<Omit<TableMap[T], 'id'>>
+): Promise<TableMap[T]> {
+  try {
+    const setClause = Object.keys(data).map((key, index) => `"${key}" = $${index + 1}`).join(', ')
+    const values = [...Object.values(data), id]
+    const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${values.length} RETURNING *;`
+
+    const updatedRow = await db.one(query, values)
+    return updatedRow as TableMap[T]
+  } catch (error) {
+    throw error
+  }
+}
+
+async function findById<T extends Tables>(tableName: T, id: number): Promise<TableMap[T] | null> {
+  try {
+    const query = `SELECT * FROM ${tableName} WHERE id = $1`
+    const row = await db.oneOrNone(query, [id])
+    return row as TableMap[T] | null
+  } catch (error) {
+    throw error
+  }
+}
+
+
+
 export {
   findAll,
-  insertIntoTable
+  insertIntoTable,
+  updateInTable,
+  findById
 }

@@ -11,8 +11,8 @@ const insertUserService = catchAsync<IUser>(async (req: HTTP.Req<Omit<IUser, 'id
   const user = await insertIntoTable('users', { email, first_name, last_name, login, password })
 
   return {
-    status: 200,
-    message: 'User successfully inserted.',
+    status: 201,
+    message: 'User successfully created.',
     data: user
   }
 })
