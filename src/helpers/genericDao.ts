@@ -37,8 +37,13 @@ async function updateInTable<T extends Tables>(
   tableName: T,  id: number,  data: Partial<Omit<TableMap[T], 'id'>>
 ): Promise<TableMap[T]> {
   try {
-    const setClause = Object.keys(data).map((key, index) => `"${key}" = $${index + 1}`).join(', ')
-    const values = [...Object.values(data), id]
+    const entries = Object.entries(data).filter(([_, value]) => value !== undefined)
+
+    const setClause = entries.map(([key], index) => `"${key}" = $${index + 1}`).join(', ')
+    const values = entries.map(([_, value]) => value)
+
+    values.push(id)
+
     const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${values.length} RETURNING *;`
 
     const updatedRow = await db.one(query, values)
@@ -58,11 +63,23 @@ async function findById<T extends Tables>(tableName: T, id: number): Promise<Tab
   }
 }
 
-
+async function deleteById<T extends Tables>(
+  tableName: T, 
+  id: number | string
+): Promise<boolean> {
+  try {
+    const query = `DELETE FROM ${tableName} WHERE id = $1 RETURNING *;`
+    const deletedRow = await db.oneOrNone(query, [id])    
+    return deletedRow
+  } catch (error) {
+    throw error
+  }
+}
 
 export {
   findAll,
   insertIntoTable,
   updateInTable,
-  findById
+  findById,
+  deleteById
 }
