@@ -66,7 +66,7 @@ async function findById<T extends Tables>(tableName: T, id: number): Promise<Tab
 async function deleteById<T extends Tables>(
   tableName: T, 
   id: number | string
-): Promise<boolean> {
+): Promise<IUser> {
   try {
     const query = `DELETE FROM ${tableName} WHERE id = $1 RETURNING *;`
     const deletedRow = await db.oneOrNone(query, [id])    
