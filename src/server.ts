@@ -1,6 +1,6 @@
 import environments from './environments'
 import app from '.'
-import pool from './db'
+import db from './db'
 
 process.on('uncaughtException', (error: Error) => {
   console.log(`Error: ${error}\nShutting down...`)
@@ -9,8 +9,8 @@ process.on('uncaughtException', (error: Error) => {
 
 async function testDBConnection() {
   try {
-    const { rows } = await pool.query('SELECT NOW()')
-    console.log('Database connection established successfully.', rows[0].now)
+    const { now } = await db.one('SELECT NOW()')
+    console.log('Database connection established successfully.', now)
   } catch (error) {
     console.error('Failed to connect to the database.')
     process.exit(1)
