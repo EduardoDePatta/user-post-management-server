@@ -5,6 +5,7 @@ const userRouter = Router()
 
 userRouter.get('/', getAllUsersService)
 userRouter.get('/:idUsuario', getUserByIdService)
+userRouter.get('/search')
 userRouter.post('/', insertUserService)
 userRouter.put('/:idUsuario', updateUserService)
 userRouter.delete('/:idUsuario', deleteUserByIdService)

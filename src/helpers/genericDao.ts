@@ -9,14 +9,29 @@ interface TableMap {
   posts: IPost
 }
 
-async function findAll<T extends Tables>(tableName: T, config: string = ''): Promise<TableMap[T]> {
+async function findAll<T extends Tables>(tableName: T,
+  page: number = 1,
+  limit: number = 10,
+  orderBy: string = 'id'): Promise<{dataSource: TableMap[T][], total: number }> {
   try {
-    const result = await db.manyOrNone(`SELECT * FROM ${tableName} ${config}`)
-    return result as unknown as TableMap[T]
+    const offset = (page - 1) * limit
+
+    const dataQuery = `SELECT * FROM ${tableName} ORDER BY ${orderBy} LIMIT $1 OFFSET $2`
+    const data = await db.manyOrNone(dataQuery, [limit, offset])
+
+    const totalQuery = `SELECT COUNT(*) FROM ${tableName}`
+    const totalResult = await db.one(totalQuery)
+    const total = parseInt(totalResult.count, 10)
+
+    return {
+      dataSource: data as TableMap[T][],
+      total
+    }
   } catch (error) {
     throw error
   }
 }
+
 
 async function insertIntoTable<T extends Tables>(tableName: T, data: Omit<Partial<TableMap[T]>, 'id'>): Promise<TableMap[T]> {
   try {
@@ -76,10 +91,45 @@ async function deleteById<T extends Tables>(
   }
 }
 
+async function searchUsers (
+  searchTerm: string,
+  page: number = 1,
+  limit: number = 10,
+  orderBy: string = 'id'
+): Promise<{ dataSource: IUser[], total: number }> {
+  try {
+    const offset = (page - 1) * limit;
+    const searchTermFormatted = `%${searchTerm}%`
+
+    const dataQuery = `
+      SELECT * FROM users 
+      WHERE first_name LIKE $1 OR last_name LIKE $1 OR email LIKE $1
+      ORDER BY ${orderBy} LIMIT $2 OFFSET $3
+    `;
+    const data = await db.manyOrNone(dataQuery, [searchTermFormatted, limit, offset])
+
+    const totalQuery = `
+      SELECT COUNT(*) FROM users 
+      WHERE first_name LIKE $1 OR last_name LIKE $1 OR email LIKE $1
+    `
+    const totalResult = await db.one(totalQuery, [searchTermFormatted])
+    const total = parseInt(totalResult.count, 10)
+
+    return {
+      dataSource: data as IUser[],
+      total
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+
 export {
   findAll,
   insertIntoTable,
   updateInTable,
   findById,
-  deleteById
+  deleteById,
+  searchUsers
 }
