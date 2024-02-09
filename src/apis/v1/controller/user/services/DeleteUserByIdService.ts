@@ -1,6 +1,6 @@
 import { HTTP } from "../../../../../helpers/HttpRequest"
 import { catchAsync } from "../../../../../helpers/catchAsync"
-import {  deleteById } from "../../../../../helpers/genericDao"
+import {  deleteById } from "../../../infra"
 import { validateMissingParam } from "../../../../../helpers/validators"
 import { checkIfUserExistsUsecase } from "../usecase"
 

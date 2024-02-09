@@ -1,5 +1,5 @@
 import { HttpException } from "../../../../../exceptions"
-import { findById } from "../../../../../helpers/genericDao"
+import { findById } from "../../../infra/genericDao"
 
 const checkIfUserExistsUsecase = async(idUsuario: number) => {
   const user = await findById('users', idUsuario)

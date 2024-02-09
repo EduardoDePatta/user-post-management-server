@@ -1,7 +1,9 @@
+// REMOVERRRRRRRRRRRRR
 interface CustomError extends Error {
   code?: string
 }
 
+// CONFERIR mais codigos? lib erros sql? pgp pg pg-primise nao por default --ver
 const errorMap: Record<string, string> = {
   '42P01': 'Table not found.',
   '42P18': 'Duplicate key violates unique constraint',
@@ -9,6 +11,7 @@ const errorMap: Record<string, string> = {
   '23505': 'Unique constraint violation.'
 }
 
+// procurar onde ifs => maps
 const catchSQLError = (error: any): string => {
   let errorMessage = error.message
 

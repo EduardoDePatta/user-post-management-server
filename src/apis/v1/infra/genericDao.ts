@@ -1,6 +1,6 @@
-import { IPost } from "../apis/v1/controller/post/interfaces/IPost";
-import { IUser } from "../apis/v1/controller/user/model/IUser";
-import db from "../db";
+import { IPost } from "../controller/post/interfaces/IPost";
+import { IUser } from "../controller/user/model/IUser";
+import db from "../../../db";
 
 type Tables = 'users' | 'posts'
 
@@ -91,34 +91,17 @@ async function deleteById<T extends Tables>(
   }
 }
 
-async function searchUsers (
-  searchTerm: string,
-  page: number = 1,
-  limit: number = 10,
-  orderBy: string = 'id'
-): Promise<{ dataSource: IUser[], total: number }> {
+async function findByField<T extends Tables>(
+  tableName: T, 
+  fieldValues: { fieldName: keyof TableMap[T], value: any }[], 
+  logicalOperator: 'AND' | 'OR' = 'OR'
+): Promise<TableMap[T][]> {
   try {
-    const offset = (page - 1) * limit;
-    const searchTermFormatted = `%${searchTerm}%`
-
-    const dataQuery = `
-      SELECT * FROM users 
-      WHERE first_name LIKE $1 OR last_name LIKE $1 OR email LIKE $1
-      ORDER BY ${orderBy} LIMIT $2 OFFSET $3
-    `;
-    const data = await db.manyOrNone(dataQuery, [searchTermFormatted, limit, offset])
-
-    const totalQuery = `
-      SELECT COUNT(*) FROM users 
-      WHERE first_name LIKE $1 OR last_name LIKE $1 OR email LIKE $1
-    `
-    const totalResult = await db.one(totalQuery, [searchTermFormatted])
-    const total = parseInt(totalResult.count, 10)
-
-    return {
-      dataSource: data as IUser[],
-      total
-    }
+    const conditions = fieldValues.map((fv, index) => `${String(fv.fieldName)} = $${index + 1}`).join(` ${logicalOperator} `)
+    const values = fieldValues.map(fv => fv.value)
+    const query = `SELECT * FROM ${tableName} WHERE ${conditions}`
+    const rows = await db.manyOrNone(query, values)
+    return rows as TableMap[T][]
   } catch (error) {
     throw error
   }
@@ -131,5 +114,5 @@ export {
   updateInTable,
   findById,
   deleteById,
-  searchUsers
+  findByField
 }

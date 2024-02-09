@@ -1,6 +1,6 @@
 import { HTTP } from "../../../../../helpers/HttpRequest"
 import { catchAsync } from "../../../../../helpers/catchAsync"
-import {  findById } from "../../../../../helpers/genericDao"
+import {  findById } from "../../../infra"
 import { validateMissingParam } from "../../../../../helpers/validators"
 
 const getUserByIdService = catchAsync(async (req: HTTP.Req<void, { idUsuario: number }>) => {
