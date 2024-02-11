@@ -7,6 +7,7 @@ export const catchAsync = <T>(fn: (req: HTTP.Req) => Promise<{ status: number; m
       const { status, message, data } = await fn(req)
       res.status(status).json({ message, data })
     } catch (error) {
+      console.log("🚀 ~ return ~ error:", error)
       next(error)
     }
   }

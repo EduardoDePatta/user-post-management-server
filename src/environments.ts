@@ -8,5 +8,6 @@ export default {
   DB_DATABASE: process.env.DB_DATABASE ?? '',
   DB_PASSWORD: String(process.env.DB_PASSWORD) ?? '',
   DB_PORT: Number(process.env.DB_PORT ?? 5432),
-  PORT: Number(process.env.PORT ?? 5000)
+  PORT: Number(process.env.PORT ?? 5000),
+  APP_SECRET: process.env.APP_SECRET ?? ''
 }

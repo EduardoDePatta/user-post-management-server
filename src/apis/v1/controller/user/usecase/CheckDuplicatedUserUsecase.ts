@@ -12,16 +12,15 @@ const checkDuplicatedUserUsecase = async ({ email, login }: CheckDuplicatedUserU
   
   let errorMessage = null
 
-  if (existingUserByEmail.length > 0 && existingUserByLogin.length > 0) {
+  if (existingUserByEmail.dataSource.length > 0 && existingUserByLogin.dataSource.length > 0) {
     errorMessage = 'User with the same email and login already exists.'
-  } else if (existingUserByEmail.length > 0) {
+  } else if (existingUserByEmail.dataSource.length > 0) {
     errorMessage = 'User with the same email already exists.'
-  } else if (existingUserByLogin.length > 0) {
+  } else if (existingUserByLogin.dataSource.length > 0) {
     errorMessage = 'User with the same login already exists.'
   }
   
   if (errorMessage) {
-    console.log("🚀 ~ checkDuplicatedUserUsecase ~ errorMessage:", errorMessage)
     throw new HttpException(400, errorMessage);
   }
 }

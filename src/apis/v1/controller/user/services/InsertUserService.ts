@@ -1,10 +1,10 @@
 import { HTTP } from "../../../../../helpers/HttpRequest"
 import { catchAsync } from "../../../../../helpers/catchAsync"
-import { findByField, insertIntoTable } from "../../../infra"
+import { insertIntoTable } from "../../../infra"
 import { validateMissingParam } from "../../../../../helpers/validators"
 import { IUser } from "../model/IUser"
-import { HttpException } from "../../../../../exceptions"
 import { checkDuplicatedUserUsecase } from "../usecase"
+import { AuthHelper } from "../../auth/helpers/AuthHelper"
 
 const insertUserService = catchAsync<IUser>(
   async (req: HTTP.Req<Omit<IUser, 'id'>>) => {
@@ -13,12 +13,14 @@ const insertUserService = catchAsync<IUser>(
 
     await checkDuplicatedUserUsecase({ email, login })
 
+    const hashedPassword = await AuthHelper.hashPassword(password)
+
     const user = await insertIntoTable("users", {
       email,
       first_name,
       last_name,
       login,
-      password,
+      password: hashedPassword,
     })
 
     return {

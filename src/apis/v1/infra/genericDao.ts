@@ -1,4 +1,4 @@
-import { IPost } from "../controller/post/interfaces/IPost";
+import { IPost } from "../controller/post/model/IPost";
 import { IUser } from "../controller/user/model/IUser";
 import db from "../../../db";
 
@@ -61,6 +61,7 @@ async function updateInTable<T extends Tables>(
 
     const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${values.length} RETURNING *;`
 
+    console.log("🚀 ~ query:", query)
     const updatedRow = await db.one(query, values)
     return updatedRow as TableMap[T]
   } catch (error) {
@@ -91,22 +92,43 @@ async function deleteById<T extends Tables>(
   }
 }
 
+interface PaginationOptions {
+  page?: number;
+  pageSize?: number;
+}
+
 async function findByField<T extends Tables>(
   tableName: T, 
   fieldValues: { fieldName: keyof TableMap[T], value: any }[], 
-  logicalOperator: 'AND' | 'OR' = 'OR'
-): Promise<TableMap[T][]> {
+  logicalOperator: 'AND' | 'OR' = 'OR',
+  paginationOptions: PaginationOptions = {}
+): Promise<{ dataSource: TableMap[T][], total: number }> {
   try {
-    const conditions = fieldValues.map((fv, index) => `${String(fv.fieldName)} = $${index + 1}`).join(` ${logicalOperator} `)
+    const conditions = fieldValues.map((fv, index) => `${String(fv.fieldName)} = $${index + 1}`)
+      .join(` ${logicalOperator} `)
+    
     const values = fieldValues.map(fv => fv.value)
-    const query = `SELECT * FROM ${tableName} WHERE ${conditions}`
-    const rows = await db.manyOrNone(query, values)
-    return rows as TableMap[T][]
+
+    let dataQuery = `SELECT * FROM ${tableName} WHERE ${conditions}`
+
+    const totalQuery = `SELECT COUNT(*) FROM ${tableName} WHERE ${conditions}`
+
+    if (paginationOptions.page !== undefined && paginationOptions.pageSize !== undefined) {
+      const offset = (paginationOptions.page - 1) * paginationOptions.pageSize
+      dataQuery += ` LIMIT $${values.length + 1} OFFSET $${values.length + 2}`
+      values.push(paginationOptions.pageSize, offset)
+    }
+
+    const dataSource = await db.manyOrNone(dataQuery, values) as TableMap[T][];
+
+    const totalResult = await db.one(totalQuery, values.slice(0, fieldValues.length))
+    const total = parseInt(totalResult.count, 10)
+
+    return { dataSource, total }
   } catch (error) {
-    throw error
+    throw error;
   }
 }
-
 
 export {
   findAll,
